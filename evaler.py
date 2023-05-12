@@ -36,10 +36,12 @@ class EvalManager(object):
 
     def report(self):
         log.info("Computing scores...")
-        total_loss = []
-
-        for id, pred, gt in zip(self._ids, self._predictions, self._groundtruths):
-            total_loss.append(self.compute_loss(pred, gt))
+        total_loss = [
+            self.compute_loss(pred, gt)
+            for id, pred, gt in zip(
+                self._ids, self._predictions, self._groundtruths
+            )
+        ]
         avg_loss = np.average(total_loss)
         log.infov("Average loss : %.4f", avg_loss)
 
@@ -114,13 +116,11 @@ class Evaler(object):
         if not (self.config.interpolate or self.config.generate or self.config.reconstruct):
             raise ValueError('Please specify at least one task by indicating' +
                              '--reconstruct, --generate, or --interpolate.')
-            return
-
         if self.config.reconstruct:
             try:
                 for s in xrange(max_steps):
                     step, loss, step_time, batch_chunk, prediction_pred, prediction_gt = \
-                        self.run_single_step(self.batch)
+                            self.run_single_step(self.batch)
                     self.log_step_message(s, loss, step_time)
                     evaler.add_batch(batch_chunk['id'], prediction_pred, prediction_gt)
 
@@ -133,16 +133,18 @@ class Evaler(object):
         if self.config.generate:
             x = self.generator(self.batch_size)
             img = self.image_grid(x)
-            imageio.imwrite('generate_{}.png'.format(self.config.prefix), img)
-            log.warning('Completed generation. Generated samples are save' +
-                        'as generate_{}.png'.format(self.config.prefix))
+            imageio.imwrite(f'generate_{self.config.prefix}.png', img)
+            log.warning(
+                f'Completed generation. Generated samples are saveas generate_{self.config.prefix}.png'
+            )
 
         if self.config.interpolate:
             x = self.interpolator(self.dataset_train, self.batch_size)
             img = self.image_grid(x)
-            imageio.imwrite('interpolate_{}.png'.format(self.config.prefix), img)
-            log.warning('Completed interpolation. Interpolated samples are save' +
-                        'as interpolate_{}.png'.format(self.config.prefix))
+            imageio.imwrite(f'interpolate_{self.config.prefix}.png', img)
+            log.warning(
+                f'Completed interpolation. Interpolated samples are saveas interpolate_{self.config.prefix}.png'
+            )
 
         coord.request_stop()
         try:
@@ -156,13 +158,12 @@ class Evaler(object):
         z = np.random.randn(num, self.config.data_info[3])
         row_sums = np.sqrt(np.sum(z ** 2, axis=0))
         z = z / row_sums[np.newaxis, :]
-        x_hat = self.session.run(self.model.x_recon, feed_dict={self.model.z: z})
-        return x_hat
+        return self.session.run(self.model.x_recon, feed_dict={self.model.z: z})
 
     def interpolator(self, dataset, bs, num=15):
         transit_num = num - 2
         img = []
-        for i in range(num):
+        for _ in range(num):
             idx = np.random.randint(len(dataset.ids)-1)
             img1, z1 = dataset.get_data(dataset.ids[idx])
             img2, z2 = dataset.get_data(dataset.ids[idx+1])

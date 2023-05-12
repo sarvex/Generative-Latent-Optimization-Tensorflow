@@ -11,8 +11,6 @@ def clean(dir):
     file_path = osp.join(dir, 'data.hdf5')
     if not osp.exists(path):
         raise IOError('Dataset not found. Please make sure the dataset was downloaded.')
-        return
-
     f = h5py.File(file_path, 'r+')
     for key in f.keys():
         try:

@@ -43,13 +43,11 @@ class Model(object):
         self.build(is_train=is_train)
 
     def get_feed_dict(self, batch_chunk, step=None, is_training=True):
-        fd = {
-            self.image: batch_chunk['image'],  # [B, h, w, c]
-            self.code: batch_chunk['code'],  # [B, d]
+        return {
+            self.image: batch_chunk['image'],
+            self.code: batch_chunk['code'],
+            self.is_train: is_training,
         }
-        fd[self.is_train] = is_training
-
-        return fd
 
     def build(self, is_train=True):
 

@@ -25,12 +25,8 @@ class Trainer(object):
                  dataset_train,
                  dataset_test):
         self.config = config
-        hyper_parameter_str = config.dataset+'_lr_'+str(config.learning_rate)
-        self.train_dir = './train_dir/%s-%s-%s' % (
-            config.prefix,
-            hyper_parameter_str,
-            time.strftime("%Y%m%d-%H%M%S")
-        )
+        hyper_parameter_str = f'{config.dataset}_lr_{str(config.learning_rate)}'
+        self.train_dir = f'./train_dir/{config.prefix}-{hyper_parameter_str}-{time.strftime("%Y%m%d-%H%M%S")}'
 
         if not os.path.exists(self.train_dir):
             os.makedirs(self.train_dir)
@@ -116,7 +112,7 @@ class Trainer(object):
 
         for s in xrange(max_steps):
             step, summary, x, loss, loss_g_update, loss_z_update, step_time = \
-                self.run_single_step(self.batch_train, dataset, step=s, is_train=True)
+                    self.run_single_step(self.batch_train, dataset, step=s, is_train=True)
 
             if s % 10 == 0:
                 self.log_step_message(step, loss, loss_g_update, loss_z_update, step_time)
@@ -129,7 +125,7 @@ class Trainer(object):
                                             os.path.join(self.train_dir, 'model'),
                                             global_step=step)
                 if self.config.dump_result:
-                    f = h5py.File(os.path.join(self.train_dir, 'dump_result_'+str(s)+'.hdf5'), 'w')
+                    f = h5py.File(os.path.join(self.train_dir, f'dump_result_{str(s)}.hdf5'), 'w')
                     f['image'] = x
                     f.close()
 
@@ -205,11 +201,10 @@ class Trainer(object):
 
 
 def check_data_path(path):
-    if os.path.isfile(os.path.join(path, 'data.hy')) \
-           and os.path.isfile(os.path.join(path, 'id.txt')):
-        return True
-    else:
-        return False
+    return bool(
+        os.path.isfile(os.path.join(path, 'data.hy'))
+        and os.path.isfile(os.path.join(path, 'id.txt'))
+    )
 
 
 def main():

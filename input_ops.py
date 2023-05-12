@@ -8,14 +8,7 @@ def check_data_id(dataset, data_id):
     if not data_id:
         return
 
-    wrong = []
-    for id in data_id:
-        if id in dataset.data:
-            pass
-        else:
-            wrong.append(id)
-
-    if len(wrong) > 0:
+    if wrong := [id for id in data_id if id not in dataset.data]:
         raise RuntimeError("There are %d invalid ids, including %s" % (
             len(wrong), wrong[:5]
         ))

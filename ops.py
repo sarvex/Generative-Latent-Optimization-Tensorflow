@@ -89,8 +89,7 @@ def residual_conv(input, num_filters, filter_size, stride, reuse=False,
     w = tf.get_variable('w', filter_shape, dtype, tf.random_normal_initializer(0.0, 0.02))
     p = (filter_size - 1) // 2
     x = tf.pad(input, [[0, 0], [p, p], [p, p], [0, 0]], 'REFLECT')
-    conv = tf.nn.conv2d(x, w, stride_shape, padding='VALID')
-    return conv
+    return tf.nn.conv2d(x, w, stride_shape, padding='VALID')
 
 
 def residual(input, num_filters, name, is_train, reuse=False, pad='REFLECT'):

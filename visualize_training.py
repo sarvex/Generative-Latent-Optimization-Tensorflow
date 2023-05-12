@@ -31,5 +31,5 @@ for file in file_list:
     II.append(I)
 
 II = np.stack(II)
-imageio.mimsave('{}.gif'.format(args.output_file), II, fps=5)
-imageio.imwrite('{}.png'.format(args.output_file), I)
+imageio.mimsave(f'{args.output_file}.gif', II, fps=5)
+imageio.imwrite(f'{args.output_file}.png', I)

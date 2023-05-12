@@ -39,30 +39,25 @@ def prepare_h5py(train_image, test_image, data_dir, shape=None):
     bar.start()
 
     f = h5py.File(osp.join(data_dir, 'data.hdf5'), 'w')
-    data_id = open(osp.join(data_dir, 'id.txt'), 'w')
-    for i in range(image.shape[0]):
+    with open(osp.join(data_dir, 'id.txt'), 'w') as data_id:
+        for i in range(image.shape[0]):
 
-        if i % (image.shape[0] / 100) == 0:
-            bar.update(i / (image.shape[0] / 100))
+            if i % (image.shape[0] / 100) == 0:
+                bar.update(i / (image.shape[0] / 100))
 
-        grp = f.create_group(str(i))
-        data_id.write(str(i)+'\n')
-        if shape:
-            grp['image'] = np.reshape(image[i], shape, order='F')
-        else:
-            grp['image'] = image[i]
+            grp = f.create_group(str(i))
+            data_id.write(str(i)+'\n')
+            grp['image'] = np.reshape(image[i], shape, order='F') if shape else image[i]
+            # sample from a distribution
+            if args.distribution == 'Uniform':
+                grp['code'] = np.random.random(args.dimension) * 2 - 1  # normal distribution
+            elif args.distribution == 'Gaussian':
+                grp['code'] = np.random.randn(args.dimension)  # normal distribution
+            elif args.distribution == 'PCA':
+                grp['code'] = Y[i, :]/np.linalg.norm(Y[i, :], 2)
 
-        # sample from a distribution
-        if args.distribution == 'Uniform':
-            grp['code'] = np.random.random(args.dimension) * 2 - 1  # normal distribution
-        elif args.distribution == 'Gaussian':
-            grp['code'] = np.random.randn(args.dimension)  # normal distribution
-        elif args.distribution == 'PCA':
-            grp['code'] = Y[i, :]/np.linalg.norm(Y[i, :], 2)
-
-    bar.finish()
-    f.close()
-    data_id.close()
+        bar.finish()
+        f.close()
     return
 
 
@@ -177,7 +172,7 @@ def download_cifar10(download_path):
     target_path = osp.join(data_dir, 'cifar-10-batches-py')
     train_image = []
     for i in range(5):
-        fd = osp.join(target_path, 'data_batch_'+str(i+1))
+        fd = osp.join(target_path, f'data_batch_{str(i + 1)}')
         dict = unpickle(fd)
         train_image.append(dict['data'])
 
